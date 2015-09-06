@@ -52,7 +52,9 @@ public class MenuTest {
 	public void getMenu() {
 		
 		System.out.println(JSONObject.fromObject(menu).toString());
-		
+		// 输出ssl 日志
+		System.setProperty("javax.net.debug", "ssl,handshake");
+		System.setProperty("https.protocols", "TLSv1");
 		Token token = PublicUtil.getAccessToken("wx56803fead87914d7", "8f8653c4d1580f7eca8efefaa2513e63");
 		
 		boolean result = MenuUtil.createMenu(JSONObject.fromObject(menu).toString(), token.getAccess_token());

@@ -13,6 +13,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,9 +37,10 @@ public class CoreController {
 	@Autowired
 	private CoreService coreService;
 
-	@RequestMapping(value = "/validation", method = { RequestMethod.POST, RequestMethod.GET })
-	public Map<String, Object> validation(HttpServletRequest request, HttpServletResponse response) {
+	@RequestMapping(value = "/validation/{wechatid}", method = { RequestMethod.POST, RequestMethod.GET })
+	public Map<String, Object> validation(@PathVariable("wechatid") String wechatid,HttpServletRequest request, HttpServletResponse response) {
 		String method = request.getMethod();
+		System.out.println("====================="+wechatid);
 		String signature = request.getParameter("signature");
 
 		String echostr = request.getParameter("echostr");
@@ -115,7 +117,7 @@ public class CoreController {
 	public String replayMe(HttpServletRequest request) {
 		String replayContent = request.getParameter("content");
 		List<String> openIds = new ArrayList<String>();
-		openIds.add("o8GTCuNm5UZYsCwgDrZ2-rfoa5YA");
+		openIds.add("o8GTCuKSBhKZzJdSD8VPL94rHel0");
 		openIds.add("o8GTCuIhV1Bb_9amaK4AeCdv-WIQ");
 		Token token = PublicUtil.getAccessToken("wx56803fead87914d7", "8f8653c4d1580f7eca8efefaa2513e63");
 		String url = CALL_CENTER_REPLAY_URL.replace("{ACCESS_TOKEN}", token.getAccess_token());

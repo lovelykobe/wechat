@@ -44,7 +44,7 @@ import com.tjaide.wechat.core.shiro.ShiroUser;
  */
 public class PublicUtil {
 	
-	public static final String PROJECT_ROOT = "http://lovelykobe.aliapp.com";
+	public static final String PROJECT_ROOT = "http://wonderlucky.imwork.net";
 
 	private static final Logger LOGGER = Logger.getLogger(PublicUtil.class);
 

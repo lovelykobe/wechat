@@ -298,8 +298,16 @@ public class CoreServiceImpl implements CoreService {
 				}else if ("bmi".equalsIgnoreCase(content)) {
 					textMessage.setContent("<a href=\""+PublicUtil.PROJECT_ROOT + "/games/BMI/index.jsp\">BMI计算器</a>");
 					respXml = MessageUtil.messageToXml(textMessage);
+				} else if ("地理位置".equals(content)) {
+					textMessage.setContent("<a href=\""+PublicUtil.PROJECT_ROOT + "/location.html\">地理位置</a>");
+					respXml = MessageUtil.messageToXml(textMessage);
 				}else {
-					textMessage.setContent("文本消息");
+					if(toUserName.equals("gh_c8888d381b2c")){
+						textMessage.setContent("王狗狗、文本消息！");
+					}
+					if(toUserName.equals("gh_e91e3bcc90c2")){
+						textMessage.setContent("丁笑笑、文本消息！");
+					}
 					respXml = MessageUtil.messageToXml(textMessage);
 				}
 			} else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_IMAGE)) {
@@ -329,7 +337,12 @@ public class CoreServiceImpl implements CoreService {
 				String eventType = requestMap.get("Event");
 				if (eventType.equals(MessageUtil.EVENT_TYPE_SUBSCRIBE)) {
 					// 关注事件
-					textMessage.setContent("王狗狗，欢迎您关注！");
+					if(toUserName.equals("gh_c8888d381b2c")){
+						textMessage.setContent("王狗狗，欢迎您关注！");
+					}
+					if(toUserName.equals("gh_e91e3bcc90c2")){
+						textMessage.setContent("丁笑笑，欢迎您关注！");
+					}
 					signDao.saveWeixinUser(fromUserName);
 					respXml = MessageUtil.messageToXml(textMessage);
 				} else if (eventType.equals(MessageUtil.EVENT_TYPE_UNSUBSCRIBE)) {
