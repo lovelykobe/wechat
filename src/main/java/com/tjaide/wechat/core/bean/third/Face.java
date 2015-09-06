@@ -1,0 +1,103 @@
+package com.tjaide.wechat.core.bean.third;
+
+/**
+ * @author wangjun
+ * @param      
+ * @throws
+ * @date 2015年7月15日上午9:13:52
+ * @Description: Face++
+ */
+public class Face implements Comparable<Face>{
+	//被检测出的每张脸的Face++中的标识
+	private String faceId;
+	//年龄估计值
+	private int ageValue;
+	//年龄估计值的正负区间
+	private int ageRange;
+	//性别 Male/Female
+	private String genderValue;
+	//性别分析的可信度
+	private double genderConfidence;
+	//人种 Asian/White/Black
+	private String raceValue;
+	//人中分析的可信度
+	private double raceConfidence;
+	//微笑成都
+	private double smilingValue;
+	//人脸框的中心点坐标
+	private double centerX;
+	private double centerY;
+	public String getFaceId() {
+		return faceId;
+	}
+	public void setFaceId(String faceId) {
+		this.faceId = faceId;
+	}
+	public int getAgeValue() {
+		return ageValue;
+	}
+	public void setAgeValue(int ageValue) {
+		this.ageValue = ageValue;
+	}
+	public int getAgeRange() {
+		return ageRange;
+	}
+	public void setAgeRange(int ageRange) {
+		this.ageRange = ageRange;
+	}
+	public String getGenderValue() {
+		return genderValue;
+	}
+	public void setGenderValue(String genderValue) {
+		this.genderValue = genderValue;
+	}
+	public double getGenderConfidence() {
+		return genderConfidence;
+	}
+	public void setGenderConfidence(double genderConfidence) {
+		this.genderConfidence = genderConfidence;
+	}
+	public String getRaceValue() {
+		return raceValue;
+	}
+	public void setRaceValue(String raceValue) {
+		this.raceValue = raceValue;
+	}
+	public double getRaceConfidence() {
+		return raceConfidence;
+	}
+	public void setRaceConfidence(double raceConfidence) {
+		this.raceConfidence = raceConfidence;
+	}
+	public double getSmilingValue() {
+		return smilingValue;
+	}
+	public void setSmilingValue(double smilingValue) {
+		this.smilingValue = smilingValue;
+	}
+	public double getCenterX() {
+		return centerX;
+	}
+	public void setCenterX(double centerX) {
+		this.centerX = centerX;
+	}
+	public double getCenterY() {
+		return centerY;
+	}
+	public void setCenterY(double centerY) {
+		this.centerY = centerY;
+	}
+	@Override
+	public int compareTo(Face face) {
+		// TODO Auto-generated method stub
+		int result = 0;
+		if(this.getCenterX() > face.getCenterX()){
+			return 1;
+		}else if(this.getCenterX() < face.getCenterX()){
+			return -1;
+		}
+		return result;
+	}
+	
+	
+}
