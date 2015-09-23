@@ -23,7 +23,7 @@ import com.thoughtworks.xstream.core.util.QuickWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import com.thoughtworks.xstream.io.xml.XppDriver;
-import com.tjaide.wechat.controller.CoreController;
+import com.tjaide.wechat.core.bean.CustomerServiceMessage;
 import com.tjaide.wechat.core.bean.req.ImageMessage;
 import com.tjaide.wechat.core.bean.req.TextMessage;
 import com.tjaide.wechat.core.bean.req.VideoMessage;
@@ -67,6 +67,18 @@ public class MessageUtil {
 	public static final String EVENT_TYPE_LOCATION = "LOCATION";
 	// 事件类型：CLICK(自定义菜单)
 	public static final String EVENT_TYPE_CLICK = "CLICK";
+	// 事件类型：scancode_waitmsg(自定义菜单)
+	public static final String EVENT_TYPE_SCANCODE_WAITMSG = "scancode_waitmsg";
+	// 事件类型：scancode_push(自定义菜单)
+	public static final String EVENT_TYPE_SCANCODE_PUSH = "scancode_push";
+	// 事件类型：pic_sysphoto(自定义菜单)
+	public static final String EVENT_TYPE_PIC_SYSPHOTO = "pic_sysphoto";
+	// 事件类型：pic_photo_or_album(自定义菜单)
+	public static final String EVENT_TYPE_PIC_PHOTO_OR_ALBUM = "pic_photo_or_album";
+	// 事件类型：pic_weixin(自定义菜单)
+	public static final String EVENT_TYPE_PIC_WEIXIN = "pic_weixin";
+	// 事件类型：location_select(自定义菜单)
+	public static final String EVENT_TYPE_LOCATION_SELECT = "location_select";
 
 	// 响应消息类型：文本
 	public static final String RESP_MESSAGE_TYPE_TEXT = "text";
@@ -80,6 +92,11 @@ public class MessageUtil {
 	public static final String RESP_MESSAGE_TYPE_MUSIC = "music";
 	// 响应消息类型：图文
 	public static final String RESP_MESSAGE_TYPE_NEWS = "news";
+	
+	// 多客服
+	public static final String RESP_MESSAGE_TYPE_CUSTOMER_SERVICE = "transfer_customer_service";
+	
+	
 	//获取微信加解密实例
 	public static WXBizMsgCrypt getWxCrypt(){
 		WXBizMsgCrypt pc = null;
@@ -115,8 +132,17 @@ public class MessageUtil {
 		List<Element> elementList = root.elements();
 
 		// 遍历所有子节点
-		for (Element e : elementList)
+		for (Element e : elementList){
+			System.out.println(e.getName()+"+++++++++++++++"+e.getText());
+			List<Element> eList = e.elements();
+			if(eList!= null){
+				for (Element a : eList){
+					System.out.println(a.getName()+"+++++++++++++++"+a.getText());
+					map.put(a.getName(), a.getText());
+				}
+			}
 			map.put(e.getName(), e.getText());
+		}
 
 		// 释放资源
 		inputStream.close();
@@ -267,6 +293,12 @@ public class MessageUtil {
 		xstream.alias("xml", newsMessage.getClass());
 		xstream.alias("item", new Article().getClass());
 		return xstream.toXML(newsMessage);
+	}
+	
+	
+	public static String messageToXml(CustomerServiceMessage customerServiceMessage) {
+		xstream.alias("xml", customerServiceMessage.getClass());
+		return xstream.toXML(customerServiceMessage);
 	}
 	
 }

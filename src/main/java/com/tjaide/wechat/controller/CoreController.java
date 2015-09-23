@@ -117,8 +117,8 @@ public class CoreController {
 	public String replayMe(HttpServletRequest request) {
 		String replayContent = request.getParameter("content");
 		List<String> openIds = new ArrayList<String>();
+		openIds.add("o8GTCuNm5UZYsCwgDrZ2-rfoa5YA");
 		openIds.add("o8GTCuKSBhKZzJdSD8VPL94rHel0");
-		openIds.add("o8GTCuIhV1Bb_9amaK4AeCdv-WIQ");
 		Token token = PublicUtil.getAccessToken("wx56803fead87914d7", "8f8653c4d1580f7eca8efefaa2513e63");
 		String url = CALL_CENTER_REPLAY_URL.replace("{ACCESS_TOKEN}", token.getAccess_token());
 		for (String tempStr : openIds) {

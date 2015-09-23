@@ -15,17 +15,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tjaide.wechat.core.bean.CustomerServiceMessage;
 import com.tjaide.wechat.core.bean.req.TextMessage;
 import com.tjaide.wechat.core.bean.resp.Article;
 import com.tjaide.wechat.core.bean.resp.Music;
 import com.tjaide.wechat.core.bean.resp.MusicMessage;
 import com.tjaide.wechat.core.bean.resp.NewsMessage;
+import com.tjaide.wechat.core.bean.semantic.SemanticParam;
+import com.tjaide.wechat.core.bean.weixin.Token;
+import com.tjaide.wechat.core.utils.AdvancedUtil;
 import com.tjaide.wechat.core.utils.FacePlusPlusUtil;
 import com.tjaide.wechat.core.utils.MessageUtil;
 import com.tjaide.wechat.core.utils.PublicUtil;
 import com.tjaide.wechat.core.utils.WeatherUtil;
 import com.tjaide.wechat.dao.SignDao;
 import com.tjaide.wechat.service.CoreService;
+
+import net.sf.json.JSONObject;
 
 /**
  * @author wangjun
@@ -301,6 +307,13 @@ public class CoreServiceImpl implements CoreService {
 				} else if ("地理位置".equals(content)) {
 					textMessage.setContent("<a href=\""+PublicUtil.PROJECT_ROOT + "/location.html\">地理位置</a>");
 					respXml = MessageUtil.messageToXml(textMessage);
+				} else if ("人工服务".equals(content)) {
+					CustomerServiceMessage csm = new CustomerServiceMessage();
+					csm.setFromUserName(toUserName);
+					csm.setToUserName(fromUserName);
+					csm.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_CUSTOMER_SERVICE);
+					csm.setCreateTime(new Date().getTime());
+					respXml = MessageUtil.messageToXml(csm);
 				}else {
 					if(toUserName.equals("gh_c8888d381b2c")){
 						textMessage.setContent("王狗狗、文本消息！");
@@ -313,6 +326,7 @@ public class CoreServiceImpl implements CoreService {
 			} else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_IMAGE)) {
 				// 图片消息
 				String imageUrl = requestMap.get("PicUrl");
+				System.out.println(imageUrl);
 				textMessage.setContent(FacePlusPlusUtil.detectFace(imageUrl));
 				respXml = MessageUtil.messageToXml(textMessage);
 			} else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_LINK)) {
@@ -329,8 +343,49 @@ public class CoreServiceImpl implements CoreService {
 				respXml = MessageUtil.messageToXml(textMessage);
 			} else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_VOICE)) {
 				// 音频消息
-				textMessage.setContent("音频消息");
-				respXml = MessageUtil.messageToXml(textMessage);
+				String recognition = requestMap.get("Recognition");
+				
+				
+				SemanticParam sp = new SemanticParam();
+				sp.setAppid("wx56803fead87914d7");
+				sp.setCategory("weather");
+				sp.setCity("天津");
+				sp.setQuery(recognition);
+				sp.setUid("o8GTCuNm5UZYsCwgDrZ2-rfoa5YA");
+				
+				String reqJSON = JSONObject.fromObject(sp).toString();
+				// TODO 需要去掉
+				Token token = PublicUtil.getAccessToken("wx56803fead87914d7", "8f8653c4d1580f7eca8efefaa2513e63");
+
+				String respJSON = AdvancedUtil.semproxy(token.getAccess_token(), reqJSON);
+				JSONObject jsonObject = JSONObject.fromObject(respJSON);
+				int errorCode = jsonObject.getInt("errcode");
+				String city = "天津";
+				if(0 == errorCode){
+					JSONObject semanticObject = (JSONObject) jsonObject.get("semantic");
+					JSONObject detailsObject = (JSONObject) semanticObject.get("details");
+					JSONObject locationObject = (JSONObject) detailsObject.get("location");
+					city = locationObject.getString("city");
+					List<Article> articles = WeatherUtil.queryWeatherIMG(city);
+					if (articles != null) {
+						NewsMessage nm = new NewsMessage();
+						nm.setFromUserName(toUserName);
+						nm.setToUserName(fromUserName);
+						nm.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_NEWS);
+						nm.setCreateTime(new Date().getTime());
+						nm.setArticleCount(articles.size());
+						nm.setArticles(articles);
+						respXml = MessageUtil.messageToXml(nm);
+					} else {
+						textMessage.setContent("请输入正确的城市名称");
+						respXml = MessageUtil.messageToXml(textMessage);
+
+					}
+				}else{
+					System.out.println("语义理解错误"+errorCode);
+					textMessage.setContent("语义理解错误"+errorCode);
+					respXml = MessageUtil.messageToXml(textMessage);
+				}
 			} else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_EVENT)) {
 				// 事件
 				// 时间类型
@@ -358,7 +413,60 @@ public class CoreServiceImpl implements CoreService {
 					} else if (eventKey.equals("KEY_MUSIC")) {
 						textMessage.setContent("您点击了每日歌曲");
 						respXml = MessageUtil.messageToXml(textMessage);
-					}
+					} 
+				}else if(eventType.equals(MessageUtil.EVENT_TYPE_SCANCODE_WAITMSG)) {
+					// 扫码带提示   可以 回信息
+					String eventKey = requestMap.get("EventKey");
+					System.out.println(requestMap);
+					String scanResult = requestMap.get("ScanResult");
+					if (eventKey.equals("KEY_11")) {
+						textMessage.setContent("您点击了【扫码带提示】菜单！\n\n扫码结果："+scanResult);
+						respXml = MessageUtil.messageToXml(textMessage);
+					} 
+				} else if(eventType.equals(MessageUtil.EVENT_TYPE_SCANCODE_PUSH)) {
+					// 扫码推事件   只会显示结果
+					String eventKey = requestMap.get("EventKey");
+					String scanResult = requestMap.get("ScanResult");
+					if (eventKey.equals("KEY_12")) {
+						textMessage.setContent("您点击了【扫码推事件】菜单！\n\n扫码结果："+scanResult);
+						respXml = MessageUtil.messageToXml(textMessage);
+					} 
+				}  else if(eventType.equals(MessageUtil.EVENT_TYPE_PIC_SYSPHOTO)) {
+					// 拍照
+					String eventKey = requestMap.get("EventKey");
+					if (eventKey.equals("KEY_21")) {
+						System.out.println("您点击了【拍照】菜单！");
+						textMessage.setContent("您点击了【拍照】菜单！");
+						respXml = MessageUtil.messageToXml(textMessage);
+					} 
+				}  else if(eventType.equals(MessageUtil.EVENT_TYPE_PIC_PHOTO_OR_ALBUM)) {
+					// 拍照或相册选择
+					String eventKey = requestMap.get("EventKey");
+					if (eventKey.equals("KEY_22")) {
+						textMessage.setContent("您点击了【拍照或相册选择】菜单！");
+						respXml = MessageUtil.messageToXml(textMessage);
+					} 
+				}  else if(eventType.equals(MessageUtil.EVENT_TYPE_PIC_WEIXIN)) {
+					// 相册选择
+					String eventKey = requestMap.get("EventKey");
+					if (eventKey.equals("KEY_23")) {
+						textMessage.setContent("您点击了【相册选择】菜单！");
+						respXml = MessageUtil.messageToXml(textMessage);
+					} 
+				}  else if(eventType.equals(MessageUtil.EVENT_TYPE_LOCATION_SELECT)) {
+					// 位置
+					String eventKey = requestMap.get("EventKey");
+					String locationX = requestMap.get("Location_X");
+					String locationY = requestMap.get("Location_Y");
+					if (eventKey.equals("KEY_31")) {
+						textMessage.setContent("您点击了【位置】菜单！\n\nx:"+locationX+"\n\ny:"+locationY);
+						respXml = MessageUtil.messageToXml(textMessage);
+					} 
+				}  else if(eventType.equals(MessageUtil.EVENT_TYPE_LOCATION)) {
+					String Longitude = requestMap.get("Longitude");
+					String Latitude = requestMap.get("Latitude");
+					System.out.println(String.format("【自动上报地理位置】经度：%s 维度：%s", Longitude,Latitude));
+					
 				}
 			}
 
